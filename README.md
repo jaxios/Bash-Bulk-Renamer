@@ -1,5 +1,14 @@
 # Bash utility for renaming items based on a given template
 
+Usage: bash_bulk_renamer.py [template_name] [--help] [--dry-run] [--in-place]
+
+template_name : name of .template file in the ./templates folders
+--dry-run : Print output without applying changes
+--in-place : Renames files without backup (default behaviour: move original files in a "backup" folder)
+
+
+Template guidelines:
+
 - % = Increasing number, increase number for leading zeros
 - $datetime("YYYYmmdd_hhss") = datetime in the indicated format
 - $device = the device based on EXIF data
