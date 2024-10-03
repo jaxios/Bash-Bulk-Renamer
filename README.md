@@ -1,6 +1,6 @@
 # Bash utility for renaming items based on a given template
 
-Usage: bash_bulk_renamer.py [template_name] [--help] [--dry-run] [--in-place]
+Usage: bash_bulk_renamer.py [target_path] [template_name] [--help] [--dry-run] [--in-place]
 
 template_name : name of .template file in the ./templates folders
 --dry-run : Print output without applying changes
@@ -12,7 +12,7 @@ Template guidelines:
 - % = Increasing number, increase number for leading zeros
 - $datetime("YYYYmmdd_hhss") = datetime in the indicated format
 - $device = the device based on EXIF data
-- $folder = Name of the parent folder, excluding index if present (eg. [000] lorem ipsum)
+- $folder = Name of the parent folder, excluding the first word (eg. [000] name, the "[000]" will get ignored)
 
 - Extension is kept the same as the origin file and converted to lower case.
 - Files are renamed base on ascending time.
