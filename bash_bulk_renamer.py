@@ -1,9 +1,9 @@
 import os
 import shutil
 import sys
-import datetime
 import pathlib
-from PIL import Image, ExifTags, 
+import imageExifExtractor
+import videoExifExtractor
 
 def printHelp():
     syntax = open("README.md", "r")
@@ -18,28 +18,13 @@ def sanitizeFolderName(folder):
 def getExifData(file, data):
 
     #extract EXIF information from file
+    ext = os.path.splitext(file)[1]
 
-    mediafile = Image.open(file)
-    mediafile_exif = mediafile.getexif()
-    # <class 'PIL.Image.Exif'>
-    print(mediafile_exif)
-    if not mediafile_exif:
-        print('Sorry, image %s has no exif data.' % (file))
-        result = "No EXIF data"
-    else:
-        for key, val in mediafile_exif.items():
-            if key in ExifTags.TAGS:
-                if data in f'{ExifTags.TAGS[key]}:{val}':
-                    if data == "DateTime":
-                        exif_date = val
-                        exif_date = datetime.datetime.strptime(exif_date, "%Y:%m:%d %H:%M:%S")
-                        exif_date = exif_date.strftime("%Y%m%d_%H%M%S")
-                        result = exif_date
-                    elif data == "Model":
-                        exif_device = val
-                        result = exif_device
-            #else:
-                #exif_infos.add(f'{key}:{val}')
+    if ext in [".jpg", ".jpeg"]: #if its an image
+        result = imageExifExtractor.imageExif(file, data)
+    else: #its a video
+        #result = "Videos not supported yet"
+        result=videoExifExtractor.videoExif(file,data)
 
     return result
 
@@ -125,7 +110,7 @@ index_digits = renamer_template.count("%")
 
 #cicle trough files and imports only certain formats
 
-valid_formats = [".jpg",".mp4",".png"]
+valid_formats = [".jpg",".mp4",".jpeg"]
 original_files = []
 for f in os.listdir(target_path):
     ext = os.path.splitext(f)[1]
