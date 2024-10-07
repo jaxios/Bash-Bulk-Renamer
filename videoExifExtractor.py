@@ -1,20 +1,18 @@
 import datetime
-import ffmpeg
+import subprocess
 
 def videoExif(file, data):
-    """_summary_
 
-    Args:
-        file (_type_): _description_
-        data (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """
-
-    videoExifData = ffmpeg.probe(file)
-    exifDatetime = videoExifData.get("streams")[0].get("tags").get("creation_time") #dictionary>list>dictionary>dictionary
-    exifDatetime = datetime.datetime.strptime(exifDatetime, "%Y-%m-%dT%H:%M:%S.000000Z")
-    result = exifDatetime.strftime("%Y%m%d_%H%M%S")
+    mediafile_exif = subprocess.run(['exiftool', file], stdout=subprocess.PIPE).stdout.decode('utf-8')
+    
+    for key, val in mediafile_exif.items():
+        if key == "Media Create Date":
+            exifDatetime = val
+            exifDatetime = datetime.datetime.strptime(exifDatetime, "%Y:%m:%d %H:%M:%S")
+            exifDatetime = exifDatetime.strftime("%Y%m%d_%H%M%S")
+            result = exifDatetime
+        elif data == "Author":
+            exif_device = val
+            result = exif_device
 
     return result
