@@ -9,7 +9,14 @@ DEVICE_TAGS = ["Camera Model Name", "Author"]
 
 def getExifData(file,data):
 
-    mediafile_exif = subprocess.run(['exiftool -api QuickTimeUTC', file], stdout=subprocess.PIPE).stdout.decode('utf-8') #-api QuickTimeUTC converts datetimes from UTC to local
+    result = subprocess.run(
+        ['exiftool', '-api', 'QuickTimeUTC', file],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    mediafile_exif = result.stdout
 
     result = "No EXIF data"
 
@@ -19,6 +26,7 @@ def getExifData(file,data):
                 if tag in line:
                     value = re.sub(r'^.*?: ', '', line)
                     value = value.split(".", 1)[0]
+                    value = value.split("+", 1)[0]
                     value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                     value = value.strftime("%Y%m%d_%H%M%S")
                     result = value
