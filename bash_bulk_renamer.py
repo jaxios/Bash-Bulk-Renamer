@@ -10,9 +10,12 @@ def printHelp():
 
 
 def sanitizeFolderName(folder):
-    folder = folder.split(' ', 1)[1]
-    folder = folder.replace("/", "")
-    return folder
+    folder = folder.split('/')
+    
+    if folder[-1] == "":
+        return folder[-2].split(' ', 1)[1]
+    else:
+        return folder[-1].split(' ', 1)[1]
 
 def getExifData(file, data):
 
@@ -84,8 +87,8 @@ print("==================================================")
 
 #Sanitize folder name
 folder_name = sanitizeFolderName(target_path)
-complete_path = str(pathlib.Path(__file__).parent.resolve()) + target_path.replace(".", "")
-
+#complete_path = str(pathlib.Path(__file__).parent.resolve()) + target_path.replace(".", "")
+complete_path = target_path
 #create log and write parameters
 
 log_file = open(complete_path + "log.txt", "w")
