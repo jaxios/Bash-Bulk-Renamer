@@ -2,8 +2,7 @@ import os
 import shutil
 import sys
 import pathlib
-import imageExifExtractor
-import videoExifExtractor
+import mediaExifExtractor
 
 def printHelp():
     syntax = open("README.md", "r")
@@ -18,13 +17,8 @@ def sanitizeFolderName(folder):
 def getExifData(file, data):
 
     #extract EXIF information from file
-    ext = os.path.splitext(file)[1]
 
-    if ext in [".jpg", ".jpeg"]: #if its an image
-        result = imageExifExtractor.imageExif(file, data)
-    else: #its a video
-        #result = "Videos not supported yet"
-        result=videoExifExtractor.videoExif(file,data)
+    result = mediaExifExtractor.getExifData(file, data)
 
     return result
 
@@ -39,8 +33,8 @@ def renameFile(path, target_file, renamer_template, folder):
     renamer_template = renamer_template.replace("%", "")
     renamer_template = renamer_template.replace("]", "")
     renamer_template = renamer_template.replace("$folder", folder)
-    renamer_template = renamer_template.replace("$datetime", getExifData(path+target_file, "DateTime"))
-    renamer_template = renamer_template.replace("$device", getExifData(path+target_file, "Model"))
+    renamer_template = renamer_template.replace("$datetime", getExifData(path+target_file, "datetime"))
+    renamer_template = renamer_template.replace("$device", getExifData(path+target_file, "device"))
 
     #convert extension to lower case
     new_file_name = renamer_template + file_extension.lower()
@@ -120,7 +114,7 @@ for f in os.listdir(target_path):
 #sort files by EXIF datetime
 sorted_files = []
 for target_file in original_files:
-    sorted_files.append([target_file, getExifData(complete_path+target_file,"DateTime")])
+    sorted_files.append([target_file, getExifData(complete_path+target_file,"datetime")])
 
 sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
@@ -145,4 +139,3 @@ for target_file in sorted_files:
     i+=1
 
 log_file.close()
-
