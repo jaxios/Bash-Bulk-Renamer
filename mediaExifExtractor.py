@@ -7,7 +7,7 @@ TARGET_PATH = "/mnt/c/Users/giuseppe.storti/Formazione/Bash Bulk Renamer/test/[0
 DATETIME_TAGS = ["Date/Time Original", "Media Create Date"]
 DEVICE_TAGS = ["Camera Model Name", "Author"]
 
-def getExifData(file,data):
+def get_exif_data(file,data):
 
     result = subprocess.run(
         ['exiftool', '-api', 'QuickTimeUTC', file],
