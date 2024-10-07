@@ -9,7 +9,7 @@ DEVICE_TAGS = ["Camera Model Name", "Author"]
 
 def getExifData(file,data):
 
-    mediafile_exif = subprocess.run(['exiftool', file], stdout=subprocess.PIPE).stdout.decode('utf-8')
+    mediafile_exif = subprocess.run(['exiftool -api QuickTimeUTC', file], stdout=subprocess.PIPE).stdout.decode('utf-8') #-api QuickTimeUTC converts datetimes from UTC to local
 
     result = "No EXIF data"
 
