@@ -1,7 +1,7 @@
-import os
 import datetime
 import subprocess
 import re
+import shortNames
 
 TARGET_PATH = "/mnt/c/Users/giuseppe.storti/Formazione/Bash Bulk Renamer/test/[01] foto lavoro - io - anno 2024/"
 DATETIME_TAGS = ["Date/Time Original", "Media Create Date"]
@@ -29,7 +29,7 @@ def getExifData(file,data):
             for line in mediafile_exif.splitlines():
                 if tag in line:
                     value = re.sub(r'^.*?: ', '', line)
-                    result = value
+                    result = shortNames.transform_device_name(value)
                     break
                     
 
