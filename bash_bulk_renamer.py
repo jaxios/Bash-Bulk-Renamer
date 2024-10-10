@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import mediaExifExtractor
 import re
+from tqdm import tqdm
 
 VALID_FORMATS = [".jpg",".mp4",".jpeg"]
 
@@ -16,8 +17,7 @@ def print_help():
 
 
 def sanitize_folder_name(folder):
-    folder = folder.split('/')
-    
+    folder = folder.split('/') 
     if folder[-1] == "":
         return folder[-2].split(' ', 1)[1]
     else:
@@ -28,22 +28,18 @@ def rename_file(path, target_file, renamer_template, folder):
 
     file_extension = os.path.splitext(target_file)[1]
 
-    #for datetime we need to extract the format too
+    # for datetime we need to extract the format too
     date_format = re.search("datetime\(\"(.*)\"\)", renamer_template)
     date_format = str(date_format.group(1))
 
-    renamer_template = renamer_template.replace("$datetime(\"%s\")" % date_format, mediaExifExtractor.get_exif_data(path+target_file, "datetime", date_format))
+    renamer_template = renamer_template.replace(f"$datetime(\"{date_format}\")", mediaExifExtractor.get_exif_data(path+target_file, "datetime", date_format))
 
-    #replace wildcard in renamer_template with data
-    renamer_template = renamer_template.replace("[", "")
-    renamer_template = renamer_template.replace("#", "")
-    renamer_template = renamer_template.replace("]", "")
+    # replace wildcard in renamer_template with data
+    renamer_template = re.sub("\[(.*)\]", "", renamer_template)
     renamer_template = renamer_template.replace("$folder", folder)
-    renamer_template = renamer_template.replace("$device", mediaExifExtractor.get_exif_data(path+target_file, "device", None))
+    renamer_template = renamer_template.replace("$device", mediaExifExtractor.get_exif_data(path+target_file, "device", None)) 
 
-    
-
-    #convert extension to lower case
+    # convert extension to lower case
     new_file_name = renamer_template + file_extension.lower()
 
     return new_file_name
@@ -55,6 +51,7 @@ IN_PLACE = False
 RECURSIVE = False
 RESTORE = False
 IGNORE_MISSING_DATA = False
+VERBOSE = False
 
 #Check arguments and syntax
 
@@ -75,7 +72,7 @@ if not os.path.exists(sys.argv[1]):
     sys.exit(1)
 
 target_path = sys.argv[1]
-if target_path[-1] != "/": #add final slash if missing
+if target_path[-1] != "/": # add final slash if missing
     target_path = target_path + "/"
 
 if "--restore" in sys.argv:
@@ -92,10 +89,13 @@ if "--y" in sys.argv:
 
 if "--dry-run" in sys.argv:
     DRY_RUN = True
+    VERBOSE = True
 if "--in-place" in sys.argv:
     IN_PLACE = True
 if "--recursive" in sys.argv:
     RECURSIVE = True
+if "--verbose" in sys.argv:
+    VERBOSE = True
 
 print("Target path: " + target_path)
 print("Dry run: "+str(DRY_RUN))
@@ -117,12 +117,12 @@ if RESTORE:
     else:
         i = 0
         for log in log_list:
-            print("%d: %s" % (i,log))
+            print(f"{i}: {log}")
             i+=1
         target_log = log_list[int(input("Which version to restore?: "))]
 
     with open(target_path + target_log, 'r', encoding="UTF-8") as openfile:
-        # Reading from json file
+        #  Reading from json file
         backup = json.load(openfile)
 
     for old, new in backup.items():
@@ -150,33 +150,32 @@ else:
 for folder in folders_list:
     print("==================================================\n" + folder)
 
-    #Sanitize folder name
-    folder_name = sanitize_folder_name(folder) #returns folder name without leading index ([###])
+    # Sanitize folder name
+    folder_name = sanitize_folder_name(folder) # returns folder name without leading index ([###])
     complete_path = folder
 
-    #Read and interpret template
+    # Read and interpret template
 
     renamer_template = open("./templates/"+sys.argv[2], "r", encoding="UTF-8")
     renamer_template = renamer_template.read()
     index_digits = renamer_template.count("#")
 
-    #cicle trough files and imports only certain formats
+    # cicle trough files and imports only certain formats
 
-  
     original_files = []
     for f in os.listdir(folder):
         ext = os.path.splitext(f)[1]
         if (os.path.isfile(folder + f) and ext.lower() in VALID_FORMATS):
             original_files.append(f)
 
-    #sort files by EXIF datetime
+    # sort files by EXIF datetime
     sorted_files = []
     for target_file in original_files:
         sorted_files.append([target_file, mediaExifExtractor.get_exif_data(complete_path+target_file,"datetime","%Y%m%d_%H%M%S")])
 
     sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
-    #rename files with log
+    # rename files with log
 
     timestamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
@@ -187,12 +186,16 @@ for folder in folders_list:
     i = 1
     FILENAME_CHANGES = 0
 
-    changelog = {} #store old and new name for logging and restore
+    changelog = {} # store old and new name for logging and restore
     changelog["Datetime"] = timestamp
+
+    # progress bar
+    
 
     for target_file in sorted_files:
         new_name = "[" + str(i).rjust(index_digits, "0") + "]" + rename_file(complete_path,target_file[0], renamer_template,folder_name)
-        print("    |_ " + target_file[0] + " > " + new_name)
+        if VERBOSE:
+            print("    |_ " + target_file[0] + " > " + new_name)
         changelog[target_file[0]] = new_name
 
         if target_file[0] != new_name:
@@ -215,5 +218,6 @@ for folder in folders_list:
         i+=1
 
     if FILENAME_CHANGES > 0:
-        with open(complete_path + timestamp + ".json", "w", encoding="UTF-8") as outfile: #write log to json
+        # write log to json
+        with open(complete_path + timestamp + ".json", "w", encoding="UTF-8") as outfile: 
             outfile.write(json.dumps(changelog, indent=4))
