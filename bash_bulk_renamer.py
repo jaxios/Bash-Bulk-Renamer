@@ -148,7 +148,7 @@ else:
             sys.exit(1)
 
 for folder in folders_list:
-    print("==================================================\n" + folder)
+    print("==================================================\n|_" + folder)
 
     # Sanitize folder name
     folder_name = sanitize_folder_name(folder) # returns folder name without leading index ([###])
@@ -189,13 +189,10 @@ for folder in folders_list:
     changelog = {} # store old and new name for logging and restore
     changelog["Datetime"] = timestamp
 
-    # progress bar
-    
-
     for target_file in sorted_files:
         new_name = "[" + str(i).rjust(index_digits, "0") + "]" + rename_file(complete_path,target_file[0], renamer_template,folder_name)
         if VERBOSE:
-            print("    |_ " + target_file[0] + " > " + new_name)
+            print("  |_ " + target_file[0] + "  ->  " + new_name)
         changelog[target_file[0]] = new_name
 
         if target_file[0] != new_name:
@@ -217,7 +214,7 @@ for folder in folders_list:
 
         i+=1
 
-    if FILENAME_CHANGES > 0:
+    if FILENAME_CHANGES > 0 and not DRY_RUN:
         # write log to json
         with open(complete_path + timestamp + ".json", "w", encoding="UTF-8") as outfile: 
             outfile.write(json.dumps(changelog, indent=4))
