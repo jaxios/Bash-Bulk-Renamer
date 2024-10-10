@@ -5,7 +5,9 @@ Usage: bash_bulk_renamer.py [target_path] [template_name] [--help] [--dry-run] [
 template_name : name of .template file in the ./templates folders
 --dry-run : Print output without applying changes
 --in-place : Renames files without backup (default behaviour: move original files in a "backup" folder)
-
+--y : Continues even if not all files have EXIF data
+--restore : automatic restore using .json log files (option to choose which version in case of multiple logs)
+--verbose : Verbose output, implicit if using --dry-run
 
 Template guidelines:
 
