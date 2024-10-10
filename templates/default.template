@@ -1,1 +1,1 @@
-[%%%] $folder - $datetime - $device
+[###] $folder - $datetime("%Y%m%d_%H%M%S") - $device
