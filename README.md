@@ -9,7 +9,7 @@ template_name : name of .template file in the ./templates folders
 
 Template guidelines:
 
-- % = Increasing number, increase number for leading zeros
+- \# = Increasing number, increase number for leading zeros
 - $datetime("YYYYmmdd_hhss") = datetime in the indicated format
 - $device = the device based on EXIF data
 - $folder = Name of the parent folder, excluding the first word (eg. [000] name, the "[000]" will get ignored)

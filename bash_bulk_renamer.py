@@ -2,11 +2,16 @@ import os
 import shutil
 import sys
 from datetime import datetime
-import mediaExifExtractor
 import json
+import mediaExifExtractor
+import re
+
+VALID_FORMATS = [".jpg",".mp4",".jpeg"]
+
+
 
 def print_help():
-    syntax = open("README.md", "r")
+    syntax = open("README.md", "r", encoding="UTF-8")
     print(syntax.read())
 
 
@@ -18,25 +23,25 @@ def sanitize_folder_name(folder):
     else:
         return folder[-1].split(' ', 1)[1]
 
-def get_exif_data(file, data):
-
-    #extract EXIF information from file
-
-    result = mediaExifExtractor.get_exif_data(file, data)
-
-    return result
 
 def rename_file(path, target_file, renamer_template, folder):
 
     file_extension = os.path.splitext(target_file)[1]
 
+    #for datetime we need to extract the format too
+    date_format = re.search("datetime\(\"(.*)\"\)", renamer_template)
+    date_format = str(date_format.group(1))
+
+    renamer_template = renamer_template.replace("$datetime(\"%s\")" % date_format, mediaExifExtractor.get_exif_data(path+target_file, "datetime", date_format))
+
     #replace wildcard in renamer_template with data
     renamer_template = renamer_template.replace("[", "")
-    renamer_template = renamer_template.replace("%", "")
+    renamer_template = renamer_template.replace("#", "")
     renamer_template = renamer_template.replace("]", "")
     renamer_template = renamer_template.replace("$folder", folder)
-    renamer_template = renamer_template.replace("$datetime", get_exif_data(path+target_file, "datetime"))
-    renamer_template = renamer_template.replace("$device", get_exif_data(path+target_file, "device"))
+    renamer_template = renamer_template.replace("$device", mediaExifExtractor.get_exif_data(path+target_file, "device", None))
+
+    
 
     #convert extension to lower case
     new_file_name = renamer_template + file_extension.lower()
@@ -49,6 +54,7 @@ DRY_RUN = False
 IN_PLACE = False
 RECURSIVE = False
 RESTORE = False
+IGNORE_MISSING_DATA = False
 
 #Check arguments and syntax
 
@@ -105,7 +111,7 @@ if RESTORE:
         ext = os.path.splitext(f)[1]
         if (os.path.isfile(target_path + f) and ext.lower() == ".json"):
             log_list.append(f)
-    
+
     if len(log_list) == 1:
         target_log = log_list[0]
     else:
@@ -114,11 +120,11 @@ if RESTORE:
             print("%d: %s" % (i,log))
             i+=1
         target_log = log_list[int(input("Which version to restore?: "))]
-    
-    with open(target_path + target_log, 'r') as openfile:
+
+    with open(target_path + target_log, 'r', encoding="UTF-8") as openfile:
         # Reading from json file
         backup = json.load(openfile)
- 
+
     for old, new in backup.items():
         if old == "Datetime":
             continue
@@ -126,7 +132,7 @@ if RESTORE:
         print(new + " > " + old)
         if not DRY_RUN:
             shutil.move(target_path + new, target_path + old)
-    
+   
     exit(0)
 
 
@@ -150,23 +156,23 @@ for folder in folders_list:
 
     #Read and interpret template
 
-    renamer_template = open("./templates/"+sys.argv[2], "r")
+    renamer_template = open("./templates/"+sys.argv[2], "r", encoding="UTF-8")
     renamer_template = renamer_template.read()
-    index_digits = renamer_template.count("%")
+    index_digits = renamer_template.count("#")
 
     #cicle trough files and imports only certain formats
 
-    valid_formats = [".jpg",".mp4",".jpeg"]
+  
     original_files = []
     for f in os.listdir(folder):
         ext = os.path.splitext(f)[1]
-        if (os.path.isfile(folder + f) and ext.lower() in valid_formats):
+        if (os.path.isfile(folder + f) and ext.lower() in VALID_FORMATS):
             original_files.append(f)
 
     #sort files by EXIF datetime
     sorted_files = []
     for target_file in original_files:
-        sorted_files.append([target_file, get_exif_data(complete_path+target_file,"datetime")])
+        sorted_files.append([target_file, mediaExifExtractor.get_exif_data(complete_path+target_file,"datetime","%Y%m%d_%H%M%S")])
 
     sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
@@ -174,12 +180,12 @@ for folder in folders_list:
 
     timestamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
-    if not DRY_RUN and not os.path.exists(folder + "backup_ " + timestamp +"/"):
+    if not DRY_RUN and not IN_PLACE and not os.path.exists(folder + "backup_ " + timestamp +"/"):
         os.makedirs(folder + "backup_ " + timestamp +"/")
 
 
     i = 1
-    filename_changes = 0
+    FILENAME_CHANGES = 0
 
     changelog = {} #store old and new name for logging and restore
     changelog["Datetime"] = timestamp
@@ -190,7 +196,7 @@ for folder in folders_list:
         changelog[target_file[0]] = new_name
 
         if target_file[0] != new_name:
-            filename_changes += 1
+            FILENAME_CHANGES += 1
 
         if not DRY_RUN:
 
@@ -208,6 +214,6 @@ for folder in folders_list:
 
         i+=1
 
-    if filename_changes > 0:
-        with open(complete_path + timestamp + ".json", "w") as outfile: #write log to json
+    if FILENAME_CHANGES > 0:
+        with open(complete_path + timestamp + ".json", "w", encoding="UTF-8") as outfile: #write log to json
             outfile.write(json.dumps(changelog, indent=4))

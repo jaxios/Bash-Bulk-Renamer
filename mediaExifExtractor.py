@@ -7,7 +7,17 @@ TARGET_PATH = "/mnt/c/Users/giuseppe.storti/Formazione/Bash Bulk Renamer/test/[0
 DATETIME_TAGS = ["Date/Time Original", "Media Create Date"]
 DEVICE_TAGS = ["Camera Model Name", "Author"]
 
-def get_exif_data(file,data):
+def get_exif_data(file,data,date_format):
+    """Returns requested EXIF data if available
+
+    Args:
+        file (str): Target file
+        data (str): datetime or device
+        date_format (str): argument for strftime()
+
+    Returns:
+        str: EXIF value
+    """
 
     result = subprocess.run(
         ['exiftool', '-api', 'QuickTimeUTC', file],
@@ -28,7 +38,7 @@ def get_exif_data(file,data):
                     value = value.split(".", 1)[0]
                     value = value.split("+", 1)[0]
                     value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
-                    value = value.strftime("%Y%m%d_%H%M%S")
+                    value = value.strftime(date_format)
                     result = value
                     break
                 

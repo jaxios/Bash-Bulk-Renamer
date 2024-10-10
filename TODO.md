@@ -1,3 +1,4 @@
 - Opzione ripristino automatico modifiche prendendo dati dal file di log
 - Usare formato datetime del template anzichè statico
 - log e backup multipli, con multipli json ti chiede la versione che vuoi
+- filtro nomi cartelle
