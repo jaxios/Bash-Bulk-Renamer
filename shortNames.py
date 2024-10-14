@@ -31,6 +31,6 @@ def transform_device_name(device_name):
         transformed_name = f"GoPro{model}"
  
     else:
-        transformed_name = device_name  # Restituisce il nome originale se non corrisponde ai modelli
+        transformed_name = device_name
 
     return transformed_name
