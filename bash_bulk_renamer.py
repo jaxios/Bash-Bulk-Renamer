@@ -100,6 +100,7 @@ print("Target path: " + target_path)
 print("Dry run: "+str(DRY_RUN))
 print("In place: "+str(IN_PLACE))
 print("Recursive: "+str(RECURSIVE))
+print("Verbose: "+str(VERBOSE))
 
 print("==================================================")
 
