@@ -1,3 +1,5 @@
+import re
+
 def transform_device_name(device_name):
     """Shortens certains devices names
 
@@ -13,9 +15,6 @@ def transform_device_name(device_name):
         "": ""
     }
 
-    gopro_prefix_map = {
-        "HERO": "GoPro"
-    }
 
     if "Galaxy" in device_name:
         parts = device_name.split()
@@ -26,8 +25,8 @@ def transform_device_name(device_name):
   
     elif "HERO" in device_name:
         parts = device_name.split()
-        model = parts[1] 
-        transformed_name = f"{gopro_prefix_map['HERO']}{model}"
+        model = re.sub("[^0-9]", "", parts[0])
+        transformed_name = f"GoPro{model}"
  
     else:
         transformed_name = device_name  # Restituisce il nome originale se non corrisponde ai modelli
