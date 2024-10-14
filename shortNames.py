@@ -15,6 +15,8 @@ def transform_device_name(device_name):
         "": ""
     }
 
+    if device_name == "SM-G975F":
+        return "S10P"
 
     if "Galaxy" in device_name:
         parts = device_name.split()
