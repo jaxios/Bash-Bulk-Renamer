@@ -36,7 +36,8 @@ def get_exif_data(file,data,date_format):
                 if tag in line:
 
                     if "0000:00:00 00:00:00" in line:
-                        return "Invalid EXIF data"
+                        print("Errore")
+                        result = "Invalid EXIF data"
 
                     value = re.sub(r'^.*?: ', '', line)
                     value = value.split(".", 1)[0]
