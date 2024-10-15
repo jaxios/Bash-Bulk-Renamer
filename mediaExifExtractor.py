@@ -34,6 +34,10 @@ def get_exif_data(file,data,date_format):
         for line in mediafile_exif.splitlines():
             for tag in DATETIME_TAGS:
                 if tag in line:
+
+                    if "0000:00:00 00:00:00" in line:
+                        return "Invalid EXIF data"
+
                     value = re.sub(r'^.*?: ', '', line)
                     value = value.split(".", 1)[0]
                     value = value.split("+", 1)[0]
