@@ -16,11 +16,20 @@ def print_help():
 
 
 def sanitize_folder_name(raw_folder):
-    processed_folder = raw_folder.split('/') 
-    if processed_folder[-1] == "":
-        return processed_folder[-2].split(' ', 1)[1]
+
+    if (re.search(r"\[(.*)\]", raw_folder)) is not None: #Checks if there is an index before the folder name
+
+        processed_folder = raw_folder.split('/')
+        if processed_folder[-1] == "":
+            return processed_folder[-2].split(' ', 1)[1]
+        else:
+            return processed_folder[-1].split(' ', 1)[1]
     else:
-        return processed_folder[-1].split(' ', 1)[1]
+        processed_folder = raw_folder.split('/')
+        if processed_folder[-1] == "":
+            return processed_folder[-2]
+        else:
+            return processed_folder[-1]
 
 
 def rename_file(path, raw_file, renamer_template, folder_name):
@@ -45,13 +54,16 @@ def rename_file(path, raw_file, renamer_template, folder_name):
 
 #==================================================================================================#
 
-DRY_RUN = False
-IN_PLACE = False
-RECURSIVE = False
-RESTORE = False
-IGNORE_MISSING_DATA = False
-VERBOSE = False
-
+parameters = {
+"DRY_RUN" : False,
+"IN_PLACE" : False,
+"RECURSIVE" : False,
+"RESTORE" : False,
+"IGNORE_MISSING_DATA" : False,
+"VERBOSE" : False,
+"CONFORMITY_CHECK" : False,
+"NO_USER_INPUT" : False,
+}
 #Check arguments and syntax
 
 if "--help" in sys.argv:
@@ -75,7 +87,7 @@ if target_path[-1] != "/": # add final slash if missing
     target_path = target_path + "/"
 
 if "--restore" in sys.argv:
-    RESTORE = True
+    parameters["RESTORE"] = True
 else:
     if not os.path.isfile("./templates/"+sys.argv[2]):
         print("Non-existent template")
@@ -83,29 +95,35 @@ else:
         print_help()
         sys.exit(1)
 
-if "--y" in sys.argv:
-    IGNORE_MISSING_DATA = True
+if "--ignore-missing-data" in sys.argv:
+    parameters["IGNORE_MISSING_DATA"] = True
 
 if "--dry-run" in sys.argv:
-    DRY_RUN = True
-    VERBOSE = True
+    parameters["DRY_RUN"] = True
+    parameters["VERBOSE"] = True
+    parameters["IGNORE_MISSING_DATA"] = True
+
 if "--in-place" in sys.argv:
-    IN_PLACE = True
+    parameters["IN_PLACE"] = True
+
 if "--recursive" in sys.argv:
-    RECURSIVE = True
-if "--verbose" in sys.argv:
-    VERBOSE = True
+    parameters["RECURSIVE"] = True
+
+if "verbose" in sys.argv:
+    parameters["VERBOSE"] = True
+
+if "--conformity-check" in sys.argv:
+    parameters["CONFORMITY_CHECK"] = True
+    parameters["DRY_RUN"] = True
 
 print("Target path: " + target_path)
-print("Dry run: "+str(DRY_RUN))
-print("In place: "+str(IN_PLACE))
-print("Recursive: "+str(RECURSIVE))
-print("Verbose: "+str(VERBOSE))
+for key,val in parameters.items():
+    print(f"{key} : {val}")
 
 print("==================================================")
 
 
-if RESTORE:
+if parameters["RESTORE"]:
     log_list = []
     for f in os.listdir(target_path):
         ext = os.path.splitext(f)[1]
@@ -130,7 +148,7 @@ if RESTORE:
             continue
 
         print(new + " > " + old)
-        if not DRY_RUN:
+        if not parameters["DRY_RUN"]:
             shutil.move(target_path + new, target_path + old)
 
     sys.exit(0)
@@ -138,7 +156,7 @@ if RESTORE:
 
 folders_list = []
 
-if RECURSIVE:
+if parameters["RECURSIVE"]:
     for subfolder in next(os.walk(target_path))[1]:
         folders_list.append(target_path + subfolder + "/")
 else:
@@ -179,7 +197,7 @@ for working_folder in folders_list:
 
     timestamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
-    if not DRY_RUN and not IN_PLACE and not os.path.exists(working_folder + "backup_ " + timestamp +"/"):
+    if not parameters["DRY_RUN"] and not parameters["IN_PLACE"] and not os.path.exists(working_folder + "backup_ " + timestamp +"/"):
         os.makedirs(working_folder + "backup_ " + timestamp +"/")
 
 
@@ -191,30 +209,39 @@ for working_folder in folders_list:
 
     for target_file in sorted_files:
         new_name = "[" + str(i).rjust(index_digits, "0") + "]" + rename_file(working_folder,target_file[0], renamer_template,folder_name)
-        if VERBOSE:
+        if parameters["VERBOSE"]:
             print("  |_ " + target_file[0] + "  ->  " + new_name)
         changelog[target_file[0]] = new_name
 
         if target_file[0] != new_name:
             FILENAME_CHANGES += 1
 
-        if not DRY_RUN:
+        if not parameters["DRY_RUN"]:
 
-            if "No EXIF data" in new_name and IGNORE_MISSING_DATA is False:
+            if "No EXIF data" in new_name and parameters["IGNORE_MISSING_DATA"] is False:
                 no_data_check = input("Not all files have complete EXIF data, continue anyway? (y/n) ")
                 if "n" in no_data_check:
                     sys.exit(1)
                 else:
-                    IGNORE_MISSING_DATA = True
+                    parameters["IGNORE_MISSING_DATA"] = True
 
-            if not IN_PLACE:
+            if not parameters["IN_PLACE"]:
                 shutil.copy2(working_folder + target_file[0], working_folder + "backup_ " + timestamp +"/" + target_file[0])
             shutil.move(working_folder + target_file[0], working_folder + new_name)
 
 
         i+=1
 
-    if FILENAME_CHANGES > 0 and not DRY_RUN:
+    if FILENAME_CHANGES > 0 and not parameters["DRY_RUN"]:
         # write log to json
         with open(working_folder + timestamp + ".json", "w", encoding="UTF-8") as outfile: 
             outfile.write(json.dumps(changelog, indent=4))
+
+
+    # Conformity check
+
+    if parameters["CONFORMITY_CHECK"]:
+        if FILENAME_CHANGES > 0:
+            print(f"{FILENAME_CHANGES} files in {working_folder} do not conform to the template selected")
+        else:
+            print(f"All files in {working_folder} conform to the template selected")
