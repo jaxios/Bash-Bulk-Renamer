@@ -35,7 +35,7 @@ def get_exif_data(file,data,date_format):
             for tag in DATETIME_TAGS:
                 if tag in line:
 
-                    if "0000:00:00 00:00:00" in line:
+                    if "0000:00:00 00:00:00" in line or "1904:01:01" in line:
                         print("Errore")
                         result = "Invalid EXIF data"
 
