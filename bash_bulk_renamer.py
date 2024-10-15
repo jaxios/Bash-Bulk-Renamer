@@ -203,6 +203,7 @@ for working_folder in folders_list:
 
     i = 1
     FILENAME_CHANGES = 0
+    NO_EXIF = 0
 
     changelog = {} # store old and new name for logging and restore
     changelog["Datetime"] = timestamp
@@ -215,6 +216,8 @@ for working_folder in folders_list:
 
         if target_file[0] != new_name:
             FILENAME_CHANGES += 1
+        if "No EXIF data" in new_name:
+            NO_EXIF += 1
 
         if not parameters["DRY_RUN"]:
 
@@ -242,6 +245,6 @@ for working_folder in folders_list:
 
     if parameters["CONFORMITY_CHECK"]:
         if FILENAME_CHANGES > 0:
-            print(f"{FILENAME_CHANGES} files in {working_folder} do not conform to the template selected")
+            print(f"{FILENAME_CHANGES} files in {working_folder} do not conform to the template selected, {NO_EXIF} have missing EXIF data")
         else:
-            print(f"All files in {working_folder} conform to the template selected")
+            print("Nothing to do")
