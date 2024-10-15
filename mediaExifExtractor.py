@@ -51,9 +51,9 @@ def get_exif_data(file,data,date_format):
         for tag in DEVICE_TAGS:
             for line in mediafile_exif.splitlines():
 
-                if "Apple" in line:
-                    result = "iPhone"
-                    break
+                #if "Apple" in line:
+                    #result = "iPhone"
+                    #break
                 if tag in line:
                     value = re.sub(r'^.*?: ', '', line)
                     result = shortNames.transform_device_name(value)
