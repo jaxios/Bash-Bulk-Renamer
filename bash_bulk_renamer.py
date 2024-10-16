@@ -195,10 +195,10 @@ for working_folder in folders_list:
 
     # rename files with log
 
-    timestamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    TIMESTAMP = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
-    if not parameters["DRY_RUN"] and not parameters["IN_PLACE"] and not os.path.exists(working_folder + "backup_ " + timestamp +"/"):
-        os.makedirs(working_folder + "backup_ " + timestamp +"/")
+    if not parameters["DRY_RUN"] and not parameters["IN_PLACE"] and not os.path.exists(working_folder + "backup_ " + TIMESTAMP +"/"):
+        os.makedirs(working_folder + "backup_ " + TIMESTAMP +"/")
 
 
     i = 1
@@ -206,9 +206,10 @@ for working_folder in folders_list:
     NO_EXIF = 0
 
     changelog = {} # store old and new name for logging and restore
-    changelog["Datetime"] = timestamp
+    changelog["Datetime"] = TIMESTAMP
 
     for target_file in sorted_files:
+
         new_name = "[" + str(i).rjust(index_digits, "0") + "]" + rename_file(working_folder,target_file[0], renamer_template,folder_name)
         if parameters["VERBOSE"]:
             print("  |_ " + target_file[0] + "  ->  " + new_name)
@@ -221,6 +222,8 @@ for working_folder in folders_list:
 
         if not parameters["DRY_RUN"]:
 
+            print(f"Renamed {i} files", end="\r")
+
             if "No EXIF data" in new_name and parameters["IGNORE_MISSING_DATA"] is False:
                 no_data_check = input("Not all files have complete EXIF data, continue anyway? (y/n) ")
                 if "n" in no_data_check:
@@ -229,7 +232,7 @@ for working_folder in folders_list:
                     parameters["IGNORE_MISSING_DATA"] = True
 
             if not parameters["IN_PLACE"]:
-                shutil.copy2(working_folder + target_file[0], working_folder + "backup_ " + timestamp +"/" + target_file[0])
+                shutil.copy2(working_folder + target_file[0], working_folder + "backup_ " + TIMESTAMP +"/" + target_file[0])
             shutil.move(working_folder + target_file[0], working_folder + new_name)
 
 
@@ -237,7 +240,7 @@ for working_folder in folders_list:
 
     if FILENAME_CHANGES > 0 and not parameters["DRY_RUN"]:
         # write log to json
-        with open(working_folder + timestamp + ".json", "w", encoding="UTF-8") as outfile: 
+        with open(working_folder + TIMESTAMP + ".json", "w", encoding="UTF-8") as outfile: 
             outfile.write(json.dumps(changelog, indent=4))
 
 
