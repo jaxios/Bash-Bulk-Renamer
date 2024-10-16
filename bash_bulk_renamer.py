@@ -109,7 +109,7 @@ if "--in-place" in sys.argv:
 if "--recursive" in sys.argv:
     parameters["RECURSIVE"] = True
 
-if "verbose" in sys.argv:
+if "--verbose" in sys.argv:
     parameters["VERBOSE"] = True
 
 if "--conformity-check" in sys.argv:
@@ -194,7 +194,7 @@ for working_folder in folders_list:
         sorted_files.append([target_file, mediaExifExtractor.get_exif_data(working_folder+target_file,"datetime","%Y%m%d_%H%M%S")])
         print(f"Analyzing {i} files", end="\r")
         i+=1
-
+    print(f"{i} files analyzed")
     sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
     # rename files with log
@@ -243,8 +243,10 @@ for working_folder in folders_list:
         i+=1
 
     if FILENAME_CHANGES > 0 and not parameters["DRY_RUN"]:
+
+        print(f"{FILENAME_CHANGES} files renamed")
         # write log to json
-        with open(working_folder + TIMESTAMP + ".json", "w", encoding="UTF-8") as outfile: 
+        with open(working_folder + TIMESTAMP + ".json", "w", encoding="UTF-8") as outfile:
             outfile.write(json.dumps(changelog, indent=4))
 
 
