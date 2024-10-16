@@ -3,7 +3,6 @@ import subprocess
 import re
 import shortNames
 
-TARGET_PATH = "/mnt/c/Users/giuseppe.storti/Formazione/Bash Bulk Renamer/test/[01] foto lavoro - io - anno 2024/"
 DATETIME_TAGS = ["Date/Time Original", "Media Create Date"]
 DEVICE_TAGS = ["Camera Model Name", "Author"]
 
