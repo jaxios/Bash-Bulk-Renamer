@@ -188,8 +188,11 @@ for working_folder in folders_list:
 
     # sort files by EXIF datetime
     sorted_files = []
+
+    i=0
     for target_file in original_files:
         sorted_files.append([target_file, mediaExifExtractor.get_exif_data(working_folder+target_file,"datetime","%Y%m%d_%H%M%S")])
+        print(f"Analyzing {i} files", end="\r")
 
     sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
@@ -234,8 +237,8 @@ for working_folder in folders_list:
             if not parameters["IN_PLACE"]:
                 shutil.copy2(working_folder + target_file[0], working_folder + "backup_ " + TIMESTAMP +"/" + target_file[0])
             shutil.move(working_folder + target_file[0], working_folder + new_name)
-
-
+        else:
+            print(f"Previewed {i} files", end="\r")
         i+=1
 
     if FILENAME_CHANGES > 0 and not parameters["DRY_RUN"]:

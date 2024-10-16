@@ -65,7 +65,7 @@ def get_exif_data(file,data,date_format):
                     value = value.strftime(date_format)
                     result = value
                     break
-                
+
     elif data == "device":
         for tag in DEVICE_TAGS:
             for line in mediafile_exif.splitlines():
@@ -77,6 +77,5 @@ def get_exif_data(file,data,date_format):
                     value = re.sub(r'^.*?: ', '', line)
                     result = shortNames.transform_device_name(value)
                     break
-                    
 
     return result
