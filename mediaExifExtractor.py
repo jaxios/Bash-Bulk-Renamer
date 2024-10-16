@@ -40,10 +40,10 @@ def get_exif_data(file,data,date_format):
 
     if "HERO" in exiftool_out or "GoPro" in exiftool_out: # GoPro
         mediafile_exif = exiftool_out
-    elif "Galaxy" in exiftool_out or "Samsung" in exiftool_out: #Samsung device
+    elif "Galaxy" in exiftool_out or "Samsung" in exiftool_out: # Samsung device
         if "File Type                       : MP4" in exiftool_out: # Samsung video
             mediafile_exif = exiftool_out_utc
-        else: #samsung photo
+        else: # samsung photo
             mediafile_exif = exiftool_out
     else: # other
         mediafile_exif = exiftool_out_utc

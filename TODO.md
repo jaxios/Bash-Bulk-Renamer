@@ -1,1 +1,2 @@
 - filtro nomi cartelle
+- rendere gestione exiftool utc più gestibile, con esclusioni prese da file e non hardcoded
