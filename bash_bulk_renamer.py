@@ -193,6 +193,7 @@ for working_folder in folders_list:
     for target_file in original_files:
         sorted_files.append([target_file, mediaExifExtractor.get_exif_data(working_folder+target_file,"datetime","%Y%m%d_%H%M%S")])
         print(f"Analyzing {i} files", end="\r")
+        i+=1
 
     sorted_files = sorted(sorted_files, key=lambda x:x[1])
 
